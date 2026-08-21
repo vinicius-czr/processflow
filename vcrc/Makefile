@@ -1,8 +1,8 @@
 CC = gcc
 CFLAGS = -Wall -Wextra
 
-TARGET = vcrc/processflow
-SRC = vcrc/src/main.c
+TARGET = processflow
+SRC = main.c
 
 all:
 	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
