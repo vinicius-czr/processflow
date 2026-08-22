@@ -1,13 +1,14 @@
 CC = gcc
-CFLAGS = -Wall -Wextra
-
+CFLAGS = -Wall -Wextra -g -std=c11
 TARGET = processflow
 SRC = main.c
 
-all:
+all: $(TARGET)
+
+$(TARGET): $(SRC)
 	$(CC) $(CFLAGS) $(SRC) -o $(TARGET)
 
 clean:
 	rm -f $(TARGET)
 
-	
+.PHONY: all clean
