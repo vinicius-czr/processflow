@@ -4,6 +4,7 @@
 
 #include "parser.h"
 #include "task.h"
+#include "executor.h"
 
 #define MAX_LINE 1024
 
@@ -30,6 +31,17 @@ static int process_line(const char *line, TaskRegistry *registry) {
         should_exit = 1;
     } else if (strcmp(parsed.tokens[0], "task") == 0) {
         task_register(registry, parsed.tokens, parsed.count);
+    } else if (strcmp(parsed.tokens[0], "run") == 0) {
+        if (parsed.count < 2) {
+                fprintf(stderr, "processflow: uso correto: run <nome>\n");
+        } else {
+            Task *t = task_find(registry, parsed.tokens[1]);
+            if (t == NULL) {
+                fprintf(stderr, "processflow: tarefa '%s' não encontrada\n", parsed.tokens[1]);
+            } else {
+                executor_run_single(t);
+            }
+        }
     } else {
         printf("[debug] comando não reconhecido ainda: '%s'\n", parsed.tokens[0]);
     }
@@ -97,7 +109,7 @@ int main(int argc, char *argv[]) {
     } else {
         run_interactive(&registry);
     }
-    
+
     task_registry_free(&registry);
     return EXIT_SUCCESS;
 }
