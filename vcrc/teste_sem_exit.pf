@@ -1,0 +1,2 @@
+task listar /bin/ls
+run listar

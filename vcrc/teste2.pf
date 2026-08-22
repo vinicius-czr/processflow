@@ -1,0 +1,7 @@
+task t1 /bin/echo primeiro
+task t2 /bin/echo segundo
+task t3 /bin/echo terceiro
+run sequential t1 t2 t3
+run parallel t1 t2 t3
+run sequential t1 naoexiste t3
+exit
