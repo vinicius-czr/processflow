@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "parser.h"
+
 #define MAX_LINE 1024
 
 // Modo interativo
@@ -27,7 +29,18 @@ static void run_interactive(void) {
             break;
         }
 
-        printf("[debug] linha recebida: '%s'\n", line);
+        ParsedLine parsed;
+        if (parse_line(line, &parsed) != 0) {
+            continue;
+        }
+
+        printf("[debug] tokens (%d): ", parsed.count);
+        for (int i = 0; i < parsed.count; i++) {
+            printf("'%s' ", parsed.tokens[i]);
+        }
+        printf("\n");
+
+        free_parsed_line(&parsed);
     }
 }
 

@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -g -std=c11
 TARGET = processflow
-SRC = main.c
+SRC = main.c parser.c
 
 all: $(TARGET)
 
