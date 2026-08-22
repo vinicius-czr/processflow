@@ -1,1 +1,4 @@
+task listar /bin/ls -l
+task saudacao /bin/echo ola mundo
+task listar /bin/ls -a
 exit
