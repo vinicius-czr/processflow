@@ -97,8 +97,9 @@ static void run_workflow(const char *filename, TaskRegistry *registry) {
 
 int main(int argc, char *argv[]) {
     if (argc > 2) {
-        fprintf(stderr, "uso: %s [workflowFile]\n", argv[0]);
-        return EXIT_FAILURE;
+    fprintf(stderr, "processflow: número incorreto de argumentos\n");
+    fprintf(stderr, "uso: %s [workflowFile]\n", argv[0]);
+    return EXIT_FAILURE;
     }
 
     TaskRegistry registry;
