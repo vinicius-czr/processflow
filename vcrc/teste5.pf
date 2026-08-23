@@ -1,0 +1,7 @@
+workdir pasta_teste
+task listar /bin/ls
+run listar
+workdir pasta_que_nao_existe
+task echo1 /bin/echo teste
+run echo1
+exit

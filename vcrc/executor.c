@@ -1,10 +1,37 @@
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include "executor.h"
+
+#define WORKDIR_MAX 512
+static char current_workdir[WORKDIR_MAX] = ""; // "" = usa o diretório atual do processo (sem troca)
+
+int executor_set_workdir(const char *path) {
+    struct stat st;
+    if (stat(path, &st) != 0 || !S_ISDIR(st.st_mode)) {
+        fprintf(stderr, "processflow: diretório '%s' não existe\n", path);
+        return -1;
+    }
+
+    strncpy(current_workdir, path, WORKDIR_MAX - 1);
+    current_workdir[WORKDIR_MAX - 1] = '\0';
+    return 0;
+}
+
+// Aplica o workdir configurado no processo filho, antes do execvp.
+static void apply_workdir(void) {
+    if (current_workdir[0] != '\0') {
+        if (chdir(current_workdir) != 0) {
+            fprintf(stderr, "processflow: não foi possível acessar o diretório '%s'\n", current_workdir);
+            _exit(EXIT_FAILURE);
+        }
+    }
+}
 
 // Aplica os redirecionamentos de entrada/saída configurados na tarefa.
 // Retorna 0 em sucesso, -1 se algum arquivo não pôde ser aberto.
@@ -42,6 +69,8 @@ int executor_run_single(Task *task) {
     }
 
     if (pid == 0) {
+        apply_workdir();
+
         if (apply_redirections(task) != 0) {
             _exit(EXIT_FAILURE);
         }
@@ -86,6 +115,8 @@ void executor_run_parallel(Task **tasks, int count) {
         }
 
         if (pid == 0) {
+            apply_workdir();
+
             execvp(tasks[i]->argv[0], tasks[i]->argv);
             fprintf(stderr, "processflow: não foi possível executar o programa '%s'\n", tasks[i]->argv[0]);
             _exit(EXIT_FAILURE);
@@ -136,6 +167,8 @@ void executor_run_pipe(Task **tasks, int count) {
         }
 
         if (pid == 0) {
+            apply_workdir();
+
             if (i > 0) {
                 dup2(pipefds[i - 1][0], STDIN_FILENO);
             }

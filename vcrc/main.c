@@ -45,6 +45,12 @@ static int process_line(const char *line, TaskRegistry *registry) {
         } else {
             task_set_output(registry, parsed.tokens[1], parsed.tokens[2], 1);
         }
+    } else if (strcmp(parsed.tokens[0], "workdir") == 0) {
+        if (parsed.count < 2) {
+            fprintf(stderr, "processflow: uso correto: workdir <diretório>\n");
+        } else {
+            executor_set_workdir(parsed.tokens[1]);
+        }
     } else if (strcmp(parsed.tokens[0], "run") == 0) {
         if (parsed.count < 2) {
             fprintf(stderr, "processflow: uso correto: run <nome> | run sequential <t1> <t2>... | run parallel <t1> <t2>... | run pipe <t1> <t2>...\n");
