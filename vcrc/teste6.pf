@@ -1,0 +1,8 @@
+task mostrar /bin/cat
+input mostrar arquivo_que_nao_existe.txt
+run mostrar
+task escrever /bin/echo teste
+output escrever /pasta/que/nao/existe/saida.txt
+run escrever
+workdir outra_pasta_inexistente
+exit
