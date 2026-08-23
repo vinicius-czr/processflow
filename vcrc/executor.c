@@ -85,3 +85,76 @@ void executor_run_parallel(Task **tasks, int count) {
         }
     }
 }
+
+void executor_run_pipe(Task **tasks, int count) {
+    int num_pipes = count - 1;
+    int pipefds[num_pipes][2];
+
+    // Cria todos os pipes antes de qualquer fork.
+    for (int i = 0; i < num_pipes; i++) {
+        if (pipe(pipefds[i]) < 0) {
+            fprintf(stderr, "processflow: falha ao criar pipe\n");
+            return;
+        }
+    }
+
+    pid_t pids[count];
+
+    for (int i = 0; i < count; i++) {
+        pid_t pid = fork();
+
+        if (pid < 0) {
+            fprintf(stderr, "processflow: falha ao criar processo para a tarefa '%s'\n", tasks[i]->name);
+            pids[i] = -1;
+            continue;
+        }
+
+        if (pid == 0) {
+            // Se não é a primeira tarefa, lê do pipe anterior em vez do stdin.
+            if (i > 0) {
+                dup2(pipefds[i - 1][0], STDIN_FILENO);
+            }
+            // Se não é a última tarefa, escreve no próximo pipe em vez do stdout.
+            if (i < num_pipes) {
+                dup2(pipefds[i][1], STDOUT_FILENO);
+            }
+
+            // Fecha todas as extremidades de pipe no filho (já duplicadas onde precisava).
+            for (int j = 0; j < num_pipes; j++) {
+                close(pipefds[j][0]);
+                close(pipefds[j][1]);
+            }
+
+            execvp(tasks[i]->argv[0], tasks[i]->argv);
+            fprintf(stderr, "processflow: não foi possível executar o programa '%s'\n", tasks[i]->argv[0]);
+            _exit(EXIT_FAILURE);
+        }
+
+        pids[i] = pid;
+    }
+
+    // O processo pai fecha todas as extremidades de pipe (ele não lê nem escreve nelas).
+    for (int i = 0; i < num_pipes; i++) {
+        close(pipefds[i][0]);
+        close(pipefds[i][1]);
+    }
+
+    // Aguarda todos os processos filhos.
+    for (int i = 0; i < count; i++) {
+        if (pids[i] < 0) {
+            continue;
+        }
+
+        int status;
+        if (waitpid(pids[i], &status, 0) < 0) {
+            fprintf(stderr, "processflow: erro ao aguardar a tarefa '%s'\n", tasks[i]->name);
+            continue;
+        }
+
+        if (WIFEXITED(status)) {
+            printf("processflow: tarefa '%s' finalizada com código %d\n", tasks[i]->name, WEXITSTATUS(status));
+        } else if (WIFSIGNALED(status)) {
+            printf("processflow: tarefa '%s' finalizada pelo sinal %d\n", tasks[i]->name, WTERMSIG(status));
+        }
+    }
+}

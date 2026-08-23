@@ -12,4 +12,7 @@ void executor_run_sequential(Task **tasks, int count);
 // Executa uma lista de tarefas em paralelo: inicia todas antes de aguardar qualquer uma.
 void executor_run_parallel(Task **tasks, int count);
 
+// Executa uma lista de tarefas encadeadas via pipe: saída de tasks[i] vira entrada de tasks[i+1].
+void executor_run_pipe(Task **tasks, int count);
+
 #endif

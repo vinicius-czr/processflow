@@ -14,14 +14,17 @@ static int process_line(const char *line, TaskRegistry *registry) {
     if (strlen(line) == 0) {
         return 0;
     }
+
     ParsedLine parsed;
     if (parse_line(line, &parsed) != 0) {
         return 0;
     }
+
     if (parsed.count == 0) {
         free_parsed_line(&parsed);
         return 0;
     }
+
     int should_exit = 0;
 
     if (strcmp(parsed.tokens[0], "exit") == 0) {
@@ -30,13 +33,15 @@ static int process_line(const char *line, TaskRegistry *registry) {
         task_register(registry, parsed.tokens, parsed.count);
     } else if (strcmp(parsed.tokens[0], "run") == 0) {
         if (parsed.count < 2) {
-            fprintf(stderr, "processflow: uso correto: run <nome> | run sequential <t1> <t2>... | run parallel <t1> <t2>...\n");
-        } else if (strcmp(parsed.tokens[1], "sequential") == 0 || strcmp(parsed.tokens[1], "parallel") == 0) {
-            int is_parallel = (strcmp(parsed.tokens[1], "parallel") == 0);
-            int n = parsed.count - 2; // quantidade de nomes de tarefa após "sequential"/"parallel"
+            fprintf(stderr, "processflow: uso correto: run <nome> | run sequential <t1> <t2>... | run parallel <t1> <t2>... | run pipe <t1> <t2>...\n");
+        } else if (strcmp(parsed.tokens[1], "sequential") == 0 ||
+                   strcmp(parsed.tokens[1], "parallel") == 0 ||
+                   strcmp(parsed.tokens[1], "pipe") == 0) {
+            const char *mode = parsed.tokens[1];
+            int n = parsed.count - 2;
 
             if (n <= 0) {
-                fprintf(stderr, "processflow: informe ao menos uma tarefa para run %s\n", parsed.tokens[1]);
+                fprintf(stderr, "processflow: informe ao menos uma tarefa para run %s\n", mode);
             } else {
                 Task *tasks[n];
                 int valid = 1;
@@ -50,8 +55,10 @@ static int process_line(const char *line, TaskRegistry *registry) {
                 }
 
                 if (valid) {
-                    if (is_parallel) {
+                    if (strcmp(mode, "parallel") == 0) {
                         executor_run_parallel(tasks, n);
+                    } else if (strcmp(mode, "pipe") == 0) {
+                        executor_run_pipe(tasks, n);
                     } else {
                         executor_run_sequential(tasks, n);
                     }
@@ -106,13 +113,11 @@ static void run_workflow(const char *filename, TaskRegistry *registry) {
 
     while (fgets(line, sizeof(line), fp) != NULL) {
         line[strcspn(line, "\n")] = '\0';
-
         printf("%s\n", line);
 
         if (process_line(line, registry)) {
             break;
         }
-
     }
 
     fclose(fp);
@@ -120,9 +125,9 @@ static void run_workflow(const char *filename, TaskRegistry *registry) {
 
 int main(int argc, char *argv[]) {
     if (argc > 2) {
-    fprintf(stderr, "processflow: número incorreto de argumentos\n");
-    fprintf(stderr, "uso: %s [workflowFile]\n", argv[0]);
-    return EXIT_FAILURE;
+        fprintf(stderr, "processflow: número incorreto de argumentos\n");
+        fprintf(stderr, "uso: %s [workflowFile]\n", argv[0]);
+        return EXIT_FAILURE;
     }
 
     TaskRegistry registry;
