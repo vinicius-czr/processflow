@@ -38,4 +38,8 @@ void job_check_all(JobList *list);
 // Imprime a lista de jobs (id, PID, nome da tarefa, status). Atualiza status antes de imprimir.
 void job_print_all(JobList *list);
 
+// Aguarda (bloqueante) o término de um job específico pelo job_id.
+// Retorna 0 em sucesso (job encontrado e aguardado), -1 se o job_id não existir.
+int job_wait(JobList *list, int job_id);
+
 #endif

@@ -50,7 +50,6 @@ void job_check_all(JobList *list) {
     }
 }
 
-
 void job_print_all(JobList *list) {
     job_check_all(list);
 
@@ -67,4 +66,31 @@ void job_print_all(JobList *list) {
             printf("[%d] %d  done (%d)  %s\n", j->job_id, j->pid, j->exit_code, j->task_name);
         }
     }
+}
+
+int job_wait(JobList *list, int job_id) {
+    Job *j = job_find(list, job_id);
+
+    if (j == NULL) {
+        fprintf(stderr, "processflow: job [%d] não encontrado\n", job_id);
+        return -1;
+    }
+
+    if (j->status == JOB_DONE) {
+        // Já tinha sido coletado antes (ex: por job_check_all via 'jobs'). Nada a esperar.
+        printf("processflow: job [%d] (%s) já finalizado com código %d\n", j->job_id, j->task_name, j->exit_code);
+        return 0;
+    }
+
+    int status;
+    if (waitpid(j->pid, &status, 0) < 0) {
+        fprintf(stderr, "processflow: erro ao aguardar o job [%d]\n", job_id);
+        return -1;
+    }
+
+    j->status = JOB_DONE;
+    j->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+
+    printf("processflow: job [%d] (%s) finalizado com código %d\n", j->job_id, j->task_name, j->exit_code);
+    return 0;
 }

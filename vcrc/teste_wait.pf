@@ -1,0 +1,10 @@
+task lenta /bin/sleep 2
+start lenta
+jobs
+wait 1
+jobs
+wait 99
+task outra /bin/sleep 1
+start outra
+wait 2
+exit

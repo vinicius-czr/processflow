@@ -67,6 +67,13 @@ static int process_line(const char *line, TaskRegistry *registry, JobList *jobs)
         }
     } else if (strcmp(parsed.tokens[0], "jobs") == 0) {
         job_print_all(jobs);
+    } else if (strcmp(parsed.tokens[0], "wait") == 0) {
+        if (parsed.count < 2) {
+            fprintf(stderr, "processflow: uso correto: wait <jobId>\n");
+        } else {
+            int job_id = atoi(parsed.tokens[1]);
+            job_wait(jobs, job_id);
+        }
     } else if (strcmp(parsed.tokens[0], "run") == 0) {
         if (parsed.count < 2) {
             fprintf(stderr, "processflow: uso correto: run <nome> | run sequential <t1> <t2>... | run parallel <t1> <t2>... | run pipe <t1> <t2>...\n");
