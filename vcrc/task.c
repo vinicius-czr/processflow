@@ -9,7 +9,6 @@ void task_registry_init(TaskRegistry *registry) {
 }
 
 int task_register(TaskRegistry *registry, char **tokens, int token_count) {
-    // tokens[0] = "task", tokens[1] = nome, tokens[2] = programa, tokens[3..] = argumentos
     if (token_count < 3) {
         fprintf(stderr, "processflow: uso correto: task <nome> <programa> [argumentos...]\n");
         return -1;
@@ -31,7 +30,10 @@ int task_register(TaskRegistry *registry, char **tokens, int token_count) {
     strncpy(t->name, name, MAX_TASK_NAME - 1);
     t->name[MAX_TASK_NAME - 1] = '\0';
 
-    // argv[0] = programa (tokens[2]), demais args (tokens[3..token_count-1]), terminado em NULL
+    t->input_file[0] = '\0';
+    t->output_file[0] = '\0';
+    t->append_output = 0;
+
     int argi = 0;
     for (int i = 2; i < token_count && argi < MAX_TASK_ARGS - 1; i++) {
         t->argv[argi] = strdup(tokens[i]);
@@ -56,6 +58,29 @@ Task *task_find(TaskRegistry *registry, const char *name) {
         }
     }
     return NULL;
+}
+
+int task_set_input(TaskRegistry *registry, const char *name, const char *filename) {
+    Task *t = task_find(registry, name);
+    if (t == NULL) {
+        fprintf(stderr, "processflow: tarefa '%s' não encontrada\n", name);
+        return -1;
+    }
+    strncpy(t->input_file, filename, sizeof(t->input_file) - 1);
+    t->input_file[sizeof(t->input_file) - 1] = '\0';
+    return 0;
+}
+
+int task_set_output(TaskRegistry *registry, const char *name, const char *filename, int append) {
+    Task *t = task_find(registry, name);
+    if (t == NULL) {
+        fprintf(stderr, "processflow: tarefa '%s' não encontrada\n", name);
+        return -1;
+    }
+    strncpy(t->output_file, filename, sizeof(t->output_file) - 1);
+    t->output_file[sizeof(t->output_file) - 1] = '\0';
+    t->append_output = append;
+    return 0;
 }
 
 void task_registry_free(TaskRegistry *registry) {

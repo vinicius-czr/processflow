@@ -8,18 +8,14 @@
 
 #define MAX_LINE 1024
 
-// Processa uma linha já lida (de stdin ou do arquivo workflow).
-// Retorna 1 se o programa deve encerrar (comando exit), 0 caso contrário.
 static int process_line(const char *line, TaskRegistry *registry) {
     if (strlen(line) == 0) {
         return 0;
     }
-
     ParsedLine parsed;
     if (parse_line(line, &parsed) != 0) {
         return 0;
     }
-
     if (parsed.count == 0) {
         free_parsed_line(&parsed);
         return 0;
@@ -31,6 +27,24 @@ static int process_line(const char *line, TaskRegistry *registry) {
         should_exit = 1;
     } else if (strcmp(parsed.tokens[0], "task") == 0) {
         task_register(registry, parsed.tokens, parsed.count);
+    } else if (strcmp(parsed.tokens[0], "input") == 0) {
+        if (parsed.count < 3) {
+            fprintf(stderr, "processflow: uso correto: input <tarefa> <arquivo>\n");
+        } else {
+            task_set_input(registry, parsed.tokens[1], parsed.tokens[2]);
+        }
+    } else if (strcmp(parsed.tokens[0], "output") == 0) {
+        if (parsed.count < 3) {
+            fprintf(stderr, "processflow: uso correto: output <tarefa> <arquivo>\n");
+        } else {
+            task_set_output(registry, parsed.tokens[1], parsed.tokens[2], 0);
+        }
+    } else if (strcmp(parsed.tokens[0], "append") == 0) {
+        if (parsed.count < 3) {
+            fprintf(stderr, "processflow: uso correto: append <tarefa> <arquivo>\n");
+        } else {
+            task_set_output(registry, parsed.tokens[1], parsed.tokens[2], 1);
+        }
     } else if (strcmp(parsed.tokens[0], "run") == 0) {
         if (parsed.count < 2) {
             fprintf(stderr, "processflow: uso correto: run <nome> | run sequential <t1> <t2>... | run parallel <t1> <t2>... | run pipe <t1> <t2>...\n");
@@ -80,7 +94,6 @@ static int process_line(const char *line, TaskRegistry *registry) {
     return should_exit;
 }
 
-// Modo interativo
 static void run_interactive(TaskRegistry *registry) {
     char line[MAX_LINE];
 
@@ -101,7 +114,6 @@ static void run_interactive(TaskRegistry *registry) {
     }
 }
 
-// Modo workflow
 static void run_workflow(const char *filename, TaskRegistry *registry) {
     FILE *fp = fopen(filename, "r");
     if (fp == NULL) {
