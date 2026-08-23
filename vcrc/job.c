@@ -49,3 +49,22 @@ void job_check_all(JobList *list) {
         }
     }
 }
+
+
+void job_print_all(JobList *list) {
+    job_check_all(list);
+
+    if (list->count == 0) {
+        printf("processflow: nenhum job em background\n");
+        return;
+    }
+
+    for (int i = 0; i < list->count; i++) {
+        Job *j = &list->jobs[i];
+        if (j->status == JOB_RUNNING) {
+            printf("[%d] %d  running    %s\n", j->job_id, j->pid, j->task_name);
+        } else {
+            printf("[%d] %d  done (%d)  %s\n", j->job_id, j->pid, j->exit_code, j->task_name);
+        }
+    }
+}

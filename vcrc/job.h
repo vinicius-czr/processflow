@@ -35,4 +35,7 @@ Job *job_find(JobList *list, int job_id);
 // Verifica (sem bloquear) se algum job em execução já terminou, atualizando seu status.
 void job_check_all(JobList *list);
 
+// Imprime a lista de jobs (id, PID, nome da tarefa, status). Atualiza status antes de imprimir.
+void job_print_all(JobList *list);
+
 #endif

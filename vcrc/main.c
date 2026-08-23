@@ -54,7 +54,7 @@ static int process_line(const char *line, TaskRegistry *registry, JobList *jobs)
         } else {
             executor_set_workdir(parsed.tokens[1]);
         }
-    } else if (strcmp(parsed.tokens[0], "start") == 0) {
+        } else if (strcmp(parsed.tokens[0], "start") == 0) {
         if (parsed.count < 2) {
             fprintf(stderr, "processflow: uso correto: start <tarefa>\n");
         } else {
@@ -65,6 +65,8 @@ static int process_line(const char *line, TaskRegistry *registry, JobList *jobs)
                 executor_start_background(t, jobs);
             }
         }
+    } else if (strcmp(parsed.tokens[0], "jobs") == 0) {
+        job_print_all(jobs);
     } else if (strcmp(parsed.tokens[0], "run") == 0) {
         if (parsed.count < 2) {
             fprintf(stderr, "processflow: uso correto: run <nome> | run sequential <t1> <t2>... | run parallel <t1> <t2>... | run pipe <t1> <t2>...\n");

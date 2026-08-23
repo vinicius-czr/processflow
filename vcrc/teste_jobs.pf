@@ -1,0 +1,10 @@
+task lenta1 /bin/sleep 3
+task lenta2 /bin/sleep 1
+start lenta1
+start lenta2
+jobs
+run rapida_inexistente
+task esperar_um_pouco /bin/sleep 2
+run esperar_um_pouco
+jobs
+exit
