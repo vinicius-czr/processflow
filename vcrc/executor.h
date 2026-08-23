@@ -2,6 +2,7 @@
 #define EXECUTOR_H
 
 #include "task.h"
+#include "job.h"
 
 // Executa uma única tarefa via fork/exec/waitpid, aguardando seu término.
 int executor_run_single(Task *task);
@@ -18,5 +19,7 @@ void executor_run_pipe(Task **tasks, int count);
 // Define o diretório de trabalho a ser usado pelas tarefas executadas a partir de agora.
 // Retorna 0 em sucesso, -1 se o diretório não existir/não puder ser acessado.
 int executor_set_workdir(const char *path);
+
+int executor_start_background(Task *task, JobList *jobs);
 
 #endif

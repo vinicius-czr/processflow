@@ -1,0 +1,5 @@
+task demorada /bin/sleep 2
+start demorada
+task rapida /bin/echo prompt-liberado-na-hora
+run rapida
+exit

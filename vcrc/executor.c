@@ -212,3 +212,31 @@ void executor_run_pipe(Task **tasks, int count) {
         }
     }
 }
+
+int executor_start_background(Task *task, JobList *jobs) {
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        fprintf(stderr, "processflow: falha ao criar processo para a tarefa '%s'\n", task->name);
+        return -1;
+    }
+
+    if (pid == 0) {
+        apply_workdir();
+
+        if (apply_redirections(task) != 0) {
+            _exit(EXIT_FAILURE);
+        }
+
+        execvp(task->argv[0], task->argv);
+        fprintf(stderr, "processflow: não foi possível executar o programa '%s'\n", task->argv[0]);
+        _exit(EXIT_FAILURE);
+    }
+
+    // Processo pai: NÃO espera. Só registra o job e retorna o prompt imediatamente.
+    int job_id = job_add(jobs, pid, task->name);
+    if (job_id > 0) {
+        printf("[%d] %d\n", job_id, pid);
+    }
+    return job_id;
+}

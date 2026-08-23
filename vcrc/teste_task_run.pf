@@ -4,4 +4,3 @@ task saudacao /bin/echo ola mundo
 run saudacao
 run naoexiste
 exit
-EOF
