@@ -1,0 +1,14 @@
+task listar /bin/ls -l
+run listar
+task t1 /bin/echo primeiro
+task t2 /bin/echo segundo
+run sequential t1 t2
+task gerar /usr/bin/printf banana\nabacaxi\nmaca\n
+task ordenar /usr/bin/sort
+run pipe gerar ordenar
+task demorada /bin/sleep 2
+start demorada
+jobs
+wait 1
+jobs
+exit
